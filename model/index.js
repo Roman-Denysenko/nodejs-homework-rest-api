@@ -1,16 +1,22 @@
-const fs = require("fs/promises");
-const path = require("path");
+const service = require("../service");
+//const fs = require("fs/promises");
+// const path = require("path");
 
-const contactsPath = path.join(__dirname, "contacts.json");
+// const contactsPath = path.join(__dirname, "contacts.json");
 
-const listContacts = async () => {
+const listContacts = async (req, res, next) => {
   try {
-    const data = await fs.readFile(contactsPath);
-    const result = JSON.parse(data);
-    return result;
+    const result = await service.getContacts();
+    res.json({
+      status: "success",
+      code: 200,
+      data: {
+        contact: result,
+      },
+    });
   } catch (err) {
-    console.log(err);
-    throw err;
+    console.error(err);
+    next(err);
   }
 };
 

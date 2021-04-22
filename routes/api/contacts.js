@@ -2,15 +2,9 @@ const express = require("express");
 const router = express.Router();
 const contacts = require("../../model/index.js");
 const validator = require("../valid-users-contacts.js");
+const mdl = require("../../model");
 
-router.get("/", async (req, res, next) => {
-  try {
-    const result = await contacts.listContacts();
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/", mdl.listContacts);
 
 router.get("/:contactId", async (req, res, next) => {
   try {
