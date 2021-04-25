@@ -1,8 +1,5 @@
 const service = require("../service");
-//const fs = require("fs/promises");
-// const path = require("path");
-
-// const contactsPath = path.join(__dirname, "contacts.json");
+const mongoose = require("mongoose");
 
 const listContacts = async (req, res, next) => {
   try {
@@ -23,6 +20,9 @@ const listContacts = async (req, res, next) => {
 const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return next({ status: 400, message: "Invalid Object Id" });
+    }
     const result = await service.getContactById(contactId);
 
     if (!result) {
@@ -47,6 +47,10 @@ const getContactById = async (req, res, next) => {
 const removeContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return next({ status: 400, message: "Invalid Object Id" });
+    }
+
     const result = await service.removeContact(contactId);
 
     if (!result) {
@@ -88,6 +92,9 @@ const addContact = async (req, res, next) => {
 const updateContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return next({ status: 400, message: "Invalid Object Id" });
+    }
     const body = req.body;
 
     if (body.constructor === Object && Object.keys(body).length === 0) {
@@ -121,6 +128,9 @@ const updateContact = async (req, res, next) => {
 const patchUpdateContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return next({ status: 400, message: "Invalid Object Id" });
+    }
     const body = req.body;
     if (body.constructor === Object && Object.keys(body).length === 0) {
       res.status(400).json({
@@ -153,6 +163,9 @@ const patchUpdateContact = async (req, res, next) => {
 const updateStatusContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return next({ status: 400, message: "Invalid Object Id" });
+    }
     const body = req.body;
     if (body.constructor === Object && Object.keys(body).length === 0) {
       res.status(400).json({

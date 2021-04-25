@@ -9,6 +9,7 @@ const schemaCreate = Joi.object({
     })
     .required(),
   phone: Joi.string().required(),
+  favorite: Joi.boolean().optional(),
 });
 
 const schemaUpdate = Joi.object({
@@ -22,9 +23,13 @@ const schemaUpdate = Joi.object({
   phone: Joi.string().optional(),
 }).or("name", "email", "phone");
 
+const schemaUpdateStatusContact = Joi.object({
+  favorite: Joi.boolean().only().required(),
+});
+
 const validate = async (schema, obj, next) => {
   try {
-    const value = await schema.validateAsync(obj);
+    await schema.validateAsync(obj);
     return next();
   } catch (err) {
     next({ status: 400, message: err.message });
@@ -38,7 +43,12 @@ const updateContact = async (req, res, next) => {
   return await validate(schemaUpdate, req.body, next);
 };
 
+const updateStatusContact = async (req, res, next) => {
+  return await validate(schemaUpdateStatusContact, req.body, next);
+};
+
 module.exports = {
   createContact,
   updateContact,
+  updateStatusContact,
 };
