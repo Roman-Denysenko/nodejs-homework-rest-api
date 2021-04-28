@@ -1,9 +1,9 @@
-const service = require("../service");
+const Service = require("../service/contact.js");
 const mongoose = require("mongoose");
 
 const listContacts = async (req, res, next) => {
   try {
-    const result = await service.getContacts();
+    const result = await Service.getContacts();
     res.json({
       status: "success",
       code: 200,
@@ -23,7 +23,7 @@ const getContactById = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
       return next({ status: 400, message: "Invalid Object Id" });
     }
-    const result = await service.getContactById(contactId);
+    const result = await Service.getContactById(contactId);
 
     if (!result) {
       next(err);
@@ -51,7 +51,7 @@ const removeContact = async (req, res, next) => {
       return next({ status: 400, message: "Invalid Object Id" });
     }
 
-    const result = await service.removeContact(contactId);
+    const result = await Service.removeContact(contactId);
 
     if (!result) {
       next(err);
@@ -75,7 +75,7 @@ const removeContact = async (req, res, next) => {
 const addContact = async (req, res, next) => {
   try {
     const body = req.body;
-    const result = await service.addContact(body);
+    const result = await Service.addContact(body);
     res.status(201).json({
       status: "success",
       code: 201,
@@ -104,7 +104,7 @@ const updateContact = async (req, res, next) => {
       });
     }
 
-    const result = await service.updateContact(contactId, body);
+    const result = await Service.updateContact(contactId, body);
     if (!result) {
       next(err);
     }
@@ -139,7 +139,7 @@ const patchUpdateContact = async (req, res, next) => {
       });
     }
 
-    const result = await service.patchUpdateContact(contactId, body);
+    const result = await Service.patchUpdateContact(contactId, body);
     if (!result) {
       next(err);
     }
@@ -174,7 +174,7 @@ const updateStatusContact = async (req, res, next) => {
       });
     }
 
-    const result = await service.patchUpdateContact(contactId, body);
+    const result = await Service.patchUpdateContact(contactId, body);
     if (!result) {
       next(err);
     }
