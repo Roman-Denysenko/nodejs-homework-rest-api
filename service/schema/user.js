@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const { Status } = require("../../helper/constants.js");
+const { Status } = require("../../helpers/constants.js");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new Schema({

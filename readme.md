@@ -2,7 +2,7 @@
 
 В app.js – веб сервер на express, добавлены прослойки morgan и cors.
 
-### Рауты:
+### Rautes contacts:
 
 `@ GET /api/contacts` -
 ничего не получает, выводит список контактов;

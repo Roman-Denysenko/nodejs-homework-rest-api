@@ -1,12 +1,14 @@
 const Service = require("../service/contact.js");
 const mongoose = require("mongoose");
+const { HttpCode } = require("../helpers/constants.js");
 
 const listContacts = async (req, res, next) => {
   try {
-    const result = await Service.getContacts();
+    const userId = req.user?.id;
+    const result = await Service.getContacts(userId, req.query);
     res.json({
       status: "success",
-      code: 200,
+      code: HttpCode.SUCCESS,
       data: {
         contacts: result,
       },
@@ -19,26 +21,30 @@ const listContacts = async (req, res, next) => {
 
 const getContactById = async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const { contactId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return next({ status: 400, message: "Invalid Object Id" });
+      return next({
+        status: HttpCode.BAD_REQUEST,
+        message: "Invalid Object Id",
+      });
     }
-    const result = await Service.getContactById(contactId);
+    const result = await Service.getContactById(userId, contactId);
 
     if (!result) {
       next(err);
     }
     res.json({
       status: "success",
-      code: 200,
+      code: HttpCode.SUCCESS,
       data: {
         contact: result,
       },
     });
   } catch (err) {
     console.log(err);
-    res.status(404).json({
-      status: 404,
+    res.status(HttpCode.NOT_FOUND).json({
+      status: HttpCode.NOT_FOUND,
       message: "Not found",
     });
   }
@@ -46,27 +52,31 @@ const getContactById = async (req, res, next) => {
 
 const removeContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const { contactId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return next({ status: 400, message: "Invalid Object Id" });
+      return next({
+        status: HttpCode.BAD_REQUEST,
+        message: "Invalid Object Id",
+      });
     }
 
-    const result = await Service.removeContact(contactId);
+    const result = await Service.removeContact(userId, contactId);
 
     if (!result) {
       next(err);
     }
     res.json({
       status: "success",
-      code: 200,
+      code: HttpCode.SUCCESS,
       data: {
         contact: result,
       },
     });
   } catch (err) {
     console.log(err);
-    res.status(404).json({
-      status: 404,
+    res.status(HttpCode.NOT_FOUND).json({
+      status: HttpCode.NOT_FOUND,
       message: "Not found",
     });
   }
@@ -74,11 +84,12 @@ const removeContact = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const body = req.body;
-    const result = await Service.addContact(body);
-    res.status(201).json({
+    const result = await Service.addContact(userId, body);
+    res.status(HttpCode.CREATED).json({
       status: "success",
-      code: 201,
+      code: HttpCode.CREATED,
       data: {
         contact: result,
       },
@@ -91,35 +102,39 @@ const addContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const { contactId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return next({ status: 400, message: "Invalid Object Id" });
+      return next({
+        status: HttpCode.BAD_REQUEST,
+        message: "Invalid Object Id",
+      });
     }
     const body = req.body;
 
     if (body.constructor === Object && Object.keys(body).length === 0) {
-      res.status(400).json({
-        status: 400,
+      res.status(HttpCode.BAD_REQUEST).json({
+        status: HttpCode.BAD_REQUEST,
         message: "missing fields",
       });
     }
 
-    const result = await Service.updateContact(contactId, body);
+    const result = await Service.updateContact(userId, contactId, body);
     if (!result) {
       next(err);
     }
 
     res.json({
       status: "success",
-      code: 200,
+      code: HttpCode.SUCCESS,
       data: {
         contact: result,
       },
     });
   } catch (err) {
     console.log(err);
-    res.status(404).json({
-      status: 404,
+    res.status(HttpCode.NOT_FOUND).json({
+      status: HttpCode.NOT_FOUND,
       message: "Not found",
     });
   }
@@ -127,34 +142,38 @@ const updateContact = async (req, res, next) => {
 
 const patchUpdateContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const { contactId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return next({ status: 400, message: "Invalid Object Id" });
+      return next({
+        status: HttpCode.BAD_REQUEST,
+        message: "Invalid Object Id",
+      });
     }
     const body = req.body;
     if (body.constructor === Object && Object.keys(body).length === 0) {
-      res.status(400).json({
-        status: 400,
+      res.status(HttpCode.BAD_REQUEST).json({
+        status: HttpCode.BAD_REQUEST,
         message: "missing fields",
       });
     }
 
-    const result = await Service.patchUpdateContact(contactId, body);
+    const result = await Service.patchUpdateContact(userId, contactId, body);
     if (!result) {
       next(err);
     }
 
     res.json({
       status: "success",
-      code: 200,
+      code: HttpCode.SUCCESS,
       data: {
         contact: result,
       },
     });
   } catch (err) {
     console.log(err);
-    res.status(404).json({
-      status: 404,
+    res.status(HttpCode.NOT_FOUND).json({
+      status: HttpCode.NOT_FOUND,
       message: "Not found",
     });
   }
@@ -162,34 +181,38 @@ const patchUpdateContact = async (req, res, next) => {
 
 const updateStatusContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const { contactId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return next({ status: 400, message: "Invalid Object Id" });
+      return next({
+        status: HttpCode.BAD_REQUEST,
+        message: "Invalid Object Id",
+      });
     }
     const body = req.body;
     if (body.constructor === Object && Object.keys(body).length === 0) {
-      res.status(400).json({
-        status: 400,
+      res.status(HttpCode.BAD_REQUEST).json({
+        status: HttpCode.BAD_REQUEST,
         message: "missing fields favorite",
       });
     }
 
-    const result = await Service.patchUpdateContact(contactId, body);
+    const result = await Service.patchUpdateContact(userId, contactId, body);
     if (!result) {
       next(err);
     }
 
     res.json({
       status: "success",
-      code: 200,
+      code: HttpCode.SUCCESS,
       data: {
         contact: result,
       },
     });
   } catch (err) {
     console.log(err);
-    res.status(404).json({
-      status: 404,
+    res.status(HttpCode.NOT_FOUND).json({
+      status: HttpCode.NOT_FOUND,
       message: "Not found",
     });
   }

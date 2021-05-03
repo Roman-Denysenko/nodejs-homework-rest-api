@@ -27,6 +27,17 @@ const schemaUpdateStatusContact = Joi.object({
   favorite: Joi.boolean().only().required(),
 });
 
+const schemaQueryContact = Joi.object({
+  sortBy: Joi.string().valid("name", "email", "phone", "favorite").optional(),
+  sortByDesc: Joi.string()
+    .valid("name", "email", "phone", "favorite")
+    .optional(),
+  filter: Joi.string().optional(),
+  limit: Joi.number().integer().min(1).max(20).optional(),
+  offset: Joi.number().integer().min(0).optional(),
+  favorite: Joi.boolean().optional(),
+}).without("sortBy", "sortByDesc");
+
 const validate = async (schema, obj, next) => {
   try {
     await schema.validateAsync(obj);
@@ -39,6 +50,7 @@ const validate = async (schema, obj, next) => {
 const createContact = async (req, res, next) => {
   return await validate(schemaCreate, req.body, next);
 };
+
 const updateContact = async (req, res, next) => {
   return await validate(schemaUpdate, req.body, next);
 };
@@ -47,8 +59,13 @@ const updateStatusContact = async (req, res, next) => {
   return await validate(schemaUpdateStatusContact, req.body, next);
 };
 
+const validQueryContact = async (req, res, next) => {
+  return await validate(schemaQueryContact, req.query, next);
+};
+
 module.exports = {
   createContact,
   updateContact,
   updateStatusContact,
+  validQueryContact,
 };
