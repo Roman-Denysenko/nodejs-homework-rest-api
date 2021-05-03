@@ -1,5 +1,5 @@
 const Service = require("../service/user.js");
-const { HttpCode } = require("../helpers/constants.js");
+const { HttpCode, Status } = require("../helpers/constants.js");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const TOKEN_SECRET_KEY = process.env.TOKEN_SECRET_KEY;
@@ -64,8 +64,39 @@ const logout = async (req, res, next) => {
   }
 };
 
+const updateSubscription = async (req, res, next) => {
+  try {
+    const id = req.user.id;
+    const { subscription } = req.body;
+    if (
+      subscription === Status.STARTER ||
+      subscription === Status.PRO ||
+      subscription === Status.BUSINESS
+    ) {
+      const result = await Service.updateSubscription(id, subscription);
+      return res.json({
+        status: "success",
+        code: HttpCode.SUCCESS,
+        data: {
+          subscription: result.subscription,
+          id: result.id,
+          email: result.email,
+        },
+      });
+    }
+    return res.status(HttpCode.BAD_REQUEST).json({
+      status: "error",
+      code: HttpCode.BAD_REQUEST,
+      message: "Bad request",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   signup,
   login,
   logout,
+  updateSubscription,
 };
