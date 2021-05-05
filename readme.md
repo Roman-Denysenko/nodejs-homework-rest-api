@@ -2,7 +2,7 @@
 
 В app.js – веб сервер на express, добавлены прослойки morgan и cors.
 
-### Рауты:
+### Rautes contacts:
 
 `@ GET /api/contacts` -
 ничего не получает, выводит список контактов;
@@ -24,6 +24,13 @@
 
 `@ PATCH /api/contacts/:contactId/favorite` -
 получает параметр contactId. Получает body в json-формате c обновлением поля favorite. Если body нет, возвращает json с ключом {"message": "missing field favorite"} и статусом 400.
+
+### Rautes users:
+
+`@ POST /api//users/signup` - регистрация пользователя.
+`@ POST /api//users/login` - логин пользователя.
+`@ POST /api//users/logout` - логаут пользователя.
+`@ PATCH /api//users` - обновление подписки (subscription) пользователя.
 
 Для маршрутов, что принимают данные (POST, PUT, PATCH) используется проверка (валидация) данных с помощью npm-библиотеки Joi.
 
