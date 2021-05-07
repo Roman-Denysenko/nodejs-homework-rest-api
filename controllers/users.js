@@ -2,12 +2,21 @@ const Jimp = require("jimp");
 const jwt = require("jsonwebtoken");
 const fs = require("fs/promises");
 const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const { promisify } = require("util");
 const Service = require("../service/user.js");
 const { HttpCode, Status } = require("../helpers/constants.js");
-const { FONT_SANS_10_BLACK } = require("jimp");
 
 require("dotenv").config();
 const TOKEN_SECRET_KEY = process.env.TOKEN_SECRET_KEY;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
+
+const loadingOnCloudinary = promisify(cloudinary.uploader.upload);
 
 const signup = async (req, res, next) => {
   const { email } = req.body;
@@ -101,18 +110,30 @@ const updateSubscription = async (req, res, next) => {
 };
 
 const updateAvatar = async (req, res, next) => {
+  if (req.file === undefined) {
+    return res.status(HttpCode.BAD_REQUEST).json({
+      code: HttpCode.BAD_REQUEST,
+      message: "Missing fields",
+    });
+  }
   try {
     const id = req.user.id;
-    const urlAvatar = await saveAvatarUrl(req);
+    // Upload from 'public':
+    // const urlAvatar = await saveAvatarUrl(req);
+    // await Service.updateAvatar(id, urlAvatar);
 
-    await Service.updateAvatar(id, urlAvatar);
+    // Upload from Cloudinari:
+    const resultUrl = await saveAvatarUserToCloud(req);
+    const { public_id: idAvatarFromCloud, secure_url: urlAvatar } = resultUrl;
+    await Service.updateAvatar(id, urlAvatar, idAvatarFromCloud);
+
     return res.json({
-      status: "success",
+      status: "Success",
       code: HttpCode.SUCCESS,
       data: { avatarURL: urlAvatar },
     });
   } catch (err) {
-    res.json({
+    res.status(HttpCode.UNAUTHORIZED).json({
       status: "Unauthorized",
       code: HttpCode.UNAUTHORIZED,
       data: {
@@ -148,6 +169,17 @@ const saveAvatarUrl = async (req) => {
   }
 
   return path.join(FOLDER_AVATARS, newAvatarName);
+};
+
+const saveAvatarUserToCloud = async (req) => {
+  const pathFile = req.file.path;
+  const result = await loadingOnCloudinary(pathFile, {
+    public_id: req.user.idAvatarFromCloud?.replace("Avatars/", ""),
+    folder: "Avatars",
+    transformation: { width: 250, height: 250, crop: "pad" },
+  });
+  await fs.unlink(pathFile);
+  return result;
 };
 
 module.exports = {
