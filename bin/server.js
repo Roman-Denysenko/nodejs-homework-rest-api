@@ -1,5 +1,5 @@
 const app = require("../app");
-const db = require("../service/db.js");
+const db = require("../model/db.js");
 const createFolderIsNotExist = require("../helpers/create-folder.js");
 require("dotenv").config();
 const uploadDirCreate = process.env.UPLOAD_DIR;
