@@ -27,10 +27,13 @@
 
 ### Rautes users:
 
-`@ POST /api//users/signup` - регистрация пользователя.
-`@ POST /api//users/login` - логин пользователя.
-`@ POST /api//users/logout` - логаут пользователя.
-`@ PATCH /api//users` - обновление подписки (subscription) пользователя.
+`@ POST /api/users/signup` - регистрация пользователя.
+`@ POST /api/users/login` - логин пользователя.
+`@ POST /api/users/logout` - логаут пользователя.
+`@ PATCH /api/users` - обновление подписки (subscription) пользователя.
+`@ PATCH /api/users/avatars`- обновления аватара.
+`@ GET /api/users/verify/:verificationToken`- по параметру verificationToken мы ищем пользователя в модели User.
+`@ POST /api/users/verify`- добавление повторной отправки email пользователю с ссылкой для верификации.
 
 Для маршрутов, что принимают данные (POST, PUT, PATCH) используется проверка (валидация) данных с помощью npm-библиотеки Joi.
 
