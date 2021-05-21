@@ -1,7 +1,7 @@
 const guard = require("../helpers/guard.js");
 const { HttpCode } = require("../helpers/constants.js");
 const { User } = require("../model/__mocks__/data");
-const passport = require("../config/passport");
+const passport = require("passport");
 
 describe("Unit test:guard", () => {
   const req = {

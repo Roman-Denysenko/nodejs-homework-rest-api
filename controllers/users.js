@@ -129,7 +129,7 @@ const updateAvatar = async (req, res, next) => {
     });
   }
   try {
-    const id = req.user.id;
+    const id = req.user._id;
     // Upload from 'public':
     // const urlAvatar = await saveAvatarUrl(req);
     // await Model.updateAvatar(id, urlAvatar);
@@ -137,6 +137,7 @@ const updateAvatar = async (req, res, next) => {
     // Upload from Cloudinari:
     const resultUrl = await saveAvatarUserToCloud(req);
     const { public_id: idAvatarFromCloud, secure_url: urlAvatar } = resultUrl;
+
     await Model.updateAvatar(id, urlAvatar, idAvatarFromCloud);
 
     return res.json({

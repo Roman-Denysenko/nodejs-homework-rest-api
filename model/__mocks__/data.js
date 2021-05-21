@@ -33,7 +33,6 @@ const User = {
   verify: true,
   verifyToken: null,
   email: "roman_denisenko@ukr.net",
-  password: "$2a$06$q76k8fZNCOQDYFVMMG.o4.mda5rlyo9by6LEh8VaVHlZ6zf/nNATW",
   avatarURL:
     "https://secure.gravatar.com/ed32b908999366e795db4258d2ef2a77.json?s=250",
   __v: 0,
