@@ -12,7 +12,7 @@ const app = express();
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(helmet());
-app.use(logger(formatsLogger));
+app.get("env") !== "test" && app.use(logger(formatsLogger));
 app.use(express.static("public"));
 
 const limiter = rateLimit({

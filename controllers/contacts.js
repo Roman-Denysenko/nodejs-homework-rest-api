@@ -1,4 +1,4 @@
-const Service = require("../service/contact.js");
+const Service = require("../model/contact.js");
 const mongoose = require("mongoose");
 const { HttpCode } = require("../helpers/constants.js");
 

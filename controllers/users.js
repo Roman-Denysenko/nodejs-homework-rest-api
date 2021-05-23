@@ -4,7 +4,9 @@ const fs = require("fs/promises");
 const path = require("path");
 const cloudinary = require("cloudinary").v2;
 const { promisify } = require("util");
-const Service = require("../service/user.js");
+
+const Model = require("../model/user.js");
+const EmailService = require("../services/email.js");
 const { HttpCode, Status } = require("../helpers/constants.js");
 
 require("dotenv").config();
@@ -20,7 +22,7 @@ const loadingOnCloudinary = promisify(cloudinary.uploader.upload);
 
 const signup = async (req, res, next) => {
   const { email } = req.body;
-  const user = await Service.findByEmail(email);
+  const user = await Model.findByEmail(email);
   if (user) {
     return res.status(HttpCode.CONFLICT).json({
       status: "error",
@@ -29,7 +31,17 @@ const signup = async (req, res, next) => {
     });
   }
   try {
-    const result = await Service.createUser(req.body);
+    const result = await Model.createUser(req.body);
+    try {
+      const emailService = new EmailService(process.env.SENDGRID_API_KEY);
+      await emailService.sendVerifyEmail(
+        result.verifyToken,
+        result.email,
+        result.name
+      );
+    } catch (err) {
+      console.log(err);
+    }
     return res.status(HttpCode.CREATED).json({
       status: "success",
       code: HttpCode.CREATED,
@@ -47,9 +59,9 @@ const signup = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await Service.findByEmail(email);
+    const user = await Model.findByEmail(email);
     const isValidPassword = await user?.validPassword(password);
-    if (!user || !isValidPassword) {
+    if (!user || !isValidPassword || !user.verify) {
       return res.status(HttpCode.UNAUTHORIZED).json({
         status: "error",
         code: HttpCode.UNAUTHORIZED,
@@ -58,7 +70,7 @@ const login = async (req, res, next) => {
     }
     const payload = { id: user.id };
     const token = jwt.sign(payload, TOKEN_SECRET_KEY, { expiresIn: "6h" });
-    await Service.updateToken(user.id, token);
+    await Model.updateToken(user.id, token);
     return res.status(HttpCode.SUCCESS).json({
       status: "success",
       code: HttpCode.SUCCESS,
@@ -72,7 +84,7 @@ const login = async (req, res, next) => {
 const logout = async (req, res, next) => {
   try {
     const id = req.user.id;
-    await Service.updateToken(id, null);
+    await Model.updateToken(id, null);
     return res.status(HttpCode.NO_CONTENT).json({});
   } catch (err) {
     next(err);
@@ -88,7 +100,7 @@ const updateSubscription = async (req, res, next) => {
       subscription === Status.PRO ||
       subscription === Status.BUSINESS
     ) {
-      const result = await Service.updateSubscription(id, subscription);
+      const result = await Model.updateSubscription(id, subscription);
       return res.json({
         status: "success",
         code: HttpCode.SUCCESS,
@@ -117,15 +129,16 @@ const updateAvatar = async (req, res, next) => {
     });
   }
   try {
-    const id = req.user.id;
+    const id = req.user._id;
     // Upload from 'public':
     // const urlAvatar = await saveAvatarUrl(req);
-    // await Service.updateAvatar(id, urlAvatar);
+    // await Model.updateAvatar(id, urlAvatar);
 
     // Upload from Cloudinari:
     const resultUrl = await saveAvatarUserToCloud(req);
     const { public_id: idAvatarFromCloud, secure_url: urlAvatar } = resultUrl;
-    await Service.updateAvatar(id, urlAvatar, idAvatarFromCloud);
+
+    await Model.updateAvatar(id, urlAvatar, idAvatarFromCloud);
 
     return res.json({
       status: "Success",
@@ -182,10 +195,71 @@ const saveAvatarUserToCloud = async (req) => {
   return result;
 };
 
+const verificationToken = async (req, res, next) => {
+  try {
+    const user = await Model.findByVerifyToken(req.params.verificationToken);
+    if (user) {
+      await Model.updateVerifyToken(user, true, null);
+      return res.status(HttpCode.SUCCESS).json({
+        status: "OK",
+        code: HttpCode.SUCCESS,
+        ResponseBody: {
+          message: "Verification successful",
+        },
+      });
+    }
+    res.status(HttpCode.NOT_FOUND).json({
+      status: "Not found",
+      code: HttpCode.NOT_FOUND,
+      ResponseBody: {
+        message: "User not found",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const repeatEmailVerify = async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(HttpCode.BAD_REQUEST).json({
+      status: "error",
+      code: HttpCode.BAD_REQUEST,
+      message: "Missing required field email",
+    });
+  }
+  try {
+    const user = await Model.findByEmail(email);
+    if (user && !user.verify) {
+      const emailService = new EmailService(process.env.SENDGRID_API_KEY);
+      await emailService.sendVerifyEmail(
+        user.verifyTokenEmail,
+        user.email,
+        user.name
+      );
+      return res.status(HttpCode.SUCCESS).json({
+        status: "success",
+        code: HttpCode.SUCCESS,
+        data: { message: "Verification email resubmitted" },
+      });
+    }
+    return res.status(HttpCode.BAD_REQUEST).json({
+      status: "bad request",
+      code: HttpCode.BAD_REQUEST,
+      data: { message: "Verification has already been passed" },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   signup,
   login,
   logout,
   updateSubscription,
   updateAvatar,
+  verificationToken,
+  repeatEmailVerify,
 };

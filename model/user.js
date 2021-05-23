@@ -39,6 +39,17 @@ const updateAvatar = async (id, avatar, idAvatarFromCloud = null) => {
   );
 };
 
+const updateVerifyToken = async (id, verify, verifyToken) => {
+  return await User.findByIdAndUpdate(id, {
+    verify,
+    verifyToken,
+  });
+};
+
+const findByVerifyToken = async (token) => {
+  return await User.findOne({ verifyToken: token });
+};
+
 module.exports = {
   findById,
   findByEmail,
@@ -46,4 +57,6 @@ module.exports = {
   updateToken,
   updateSubscription,
   updateAvatar,
+  updateVerifyToken,
+  findByVerifyToken,
 };
